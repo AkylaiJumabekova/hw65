@@ -16,7 +16,7 @@ const Admin: React.FC = () => {
         setLoading(true);
         try {
             const response = await axiosApi.get<PageData>(`/pages/${pageName}.json`);
-            setPageData(response.data);
+            setPageData(response.data || { title: '', content: '' });
         } catch (error) {
             console.error('Failed to fetch page data:', error);
         } finally {
@@ -24,19 +24,17 @@ const Admin: React.FC = () => {
         }
     };
 
+    useEffect(() => {
+        fetchPageData(selectedPage);
+    }, [selectedPage]);
+
     const handlePageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        const newPage = event.target.value;
-        setSelectedPage(newPage);
-        fetchPageData(newPage);
+        setSelectedPage(event.target.value);
     };
 
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = event.target;
         setPageData(prevState => prevState ? { ...prevState, [name]: value } : null);
-    };
-
-    const handleNewPageNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setNewPageName(event.target.value);
     };
 
     const handleSave = async () => {
@@ -62,7 +60,7 @@ const Admin: React.FC = () => {
             await axiosApi.put(`/pages/${newPageName}.json`, { title: 'New Page', content: 'New Content' });
             alert('New page created successfully!');
             setSelectedPage(newPageName);
-            fetchPageData(newPageName);
+            setNewPageName('');
         } catch (error) {
             console.error('Failed to create new page:', error);
         } finally {
@@ -76,7 +74,6 @@ const Admin: React.FC = () => {
             await axiosApi.delete(`/pages/${selectedPage}.json`);
             alert('Page deleted successfully!');
             setSelectedPage('about');
-            fetchPageData('about');
         } catch (error) {
             console.error('Failed to delete page:', error);
         } finally {
@@ -92,10 +89,6 @@ const Admin: React.FC = () => {
         setShowConfirm(false);
         await handleDeletePage();
     };
-
-    useEffect(() => {
-        fetchPageData(selectedPage);
-    }, [selectedPage]);
 
     return (
         <div>
@@ -131,16 +124,14 @@ const Admin: React.FC = () => {
                         ></textarea>
                     </div>
                     <button className="btn btn-primary" onClick={handleSave}>Save</button>
-                    <div className="form-group mt-3">
-                        <label>New Page Name</label>
-                        <input
-                            type="text"
-                            className="form-control"
-                            value={newPageName}
-                            onChange={handleNewPageNameChange}
-                        />
-                        <button className="btn btn-secondary mt-2" onClick={handleCreateNewPage}>Create New Page</button>
-                    </div>
+                    <input
+                        type="text"
+                        className="form-control mt-3"
+                        placeholder="New page name"
+                        value={newPageName}
+                        onChange={(e) => setNewPageName(e.target.value)}
+                    />
+                    <button className="btn btn-secondary mt-2" onClick={handleCreateNewPage}>Create New Page</button>
                     <button className="btn btn-danger mt-2" onClick={confirmDeletePage}>Delete Page</button>
                 </>
             )}
