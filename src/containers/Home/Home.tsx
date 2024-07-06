@@ -1,31 +1,33 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import axiosApi from '../../axiosApi';
-
-interface PageData {
-    title: string;
-    content: string;
-}
+import { PageData } from '../../types';
 
 const Home: React.FC = () => {
     const { pageName } = useParams<{ pageName: string }>();
     const [pageData, setPageData] = useState<PageData | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
 
-    useEffect(() => {
-        const fetchPageData = async () => {
-            try {
-                const response = await axiosApi.get<PageData>(`/pages/${pageName}.json`);
+    const fetchPageData = useCallback(async () => {
+        setLoading(true);
+        try {
+            const response = await axiosApi.get<PageData>(`/pages/${pageName}.json`);
+            if (response.data) {
                 setPageData(response.data);
-            } catch (error) {
-                console.error('Failed to fetch page data:', error);
-            } finally {
-                setLoading(false);
+            } else {
+                setPageData(null);
             }
-        };
-
-        fetchPageData();
+        } catch (error) {
+            console.error('Failed to fetch page data:', error);
+            setPageData(null);
+        } finally {
+            setLoading(false);
+        }
     }, [pageName]);
+
+    useEffect(() => {
+        fetchPageData();
+    }, [fetchPageData]);
 
     if (loading) {
         return <p>Loading...</p>;
