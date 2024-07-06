@@ -9,6 +9,7 @@ const Admin: React.FC = () => {
     const [pageData, setPageData] = useState<PageData | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [showConfirm, setShowConfirm] = useState<boolean>(false);
+    const [newPageName, setNewPageName] = useState<string>('');
     const navigate = useNavigate();
 
     const fetchPageData = async (pageName: string) => {
@@ -34,6 +35,10 @@ const Admin: React.FC = () => {
         setPageData(prevState => prevState ? { ...prevState, [name]: value } : null);
     };
 
+    const handleNewPageNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setNewPageName(event.target.value);
+    };
+
     const handleSave = async () => {
         setLoading(true);
         try {
@@ -50,7 +55,6 @@ const Admin: React.FC = () => {
     };
 
     const handleCreateNewPage = async () => {
-        const newPageName = prompt('Enter the name of the new page:');
         if (!newPageName) return;
 
         setLoading(true);
@@ -100,6 +104,8 @@ const Admin: React.FC = () => {
                 <option value="about">About</option>
                 <option value="contacts">Contacts</option>
                 <option value="divisions">Divisions</option>
+                <option value="services">Services</option>
+                <option value="team">Team</option>
             </select>
             {loading ? (
                 <p>Loading...</p>
@@ -125,8 +131,17 @@ const Admin: React.FC = () => {
                         ></textarea>
                     </div>
                     <button className="btn btn-primary" onClick={handleSave}>Save</button>
-                    <button className="btn btn-secondary" onClick={handleCreateNewPage}>Create New Page</button>
-                    <button className="btn btn-danger" onClick={confirmDeletePage}>Delete Page</button>
+                    <div className="form-group mt-3">
+                        <label>New Page Name</label>
+                        <input
+                            type="text"
+                            className="form-control"
+                            value={newPageName}
+                            onChange={handleNewPageNameChange}
+                        />
+                        <button className="btn btn-secondary mt-2" onClick={handleCreateNewPage}>Create New Page</button>
+                    </div>
+                    <button className="btn btn-danger mt-2" onClick={confirmDeletePage}>Delete Page</button>
                 </>
             )}
             <ConfirmModal
